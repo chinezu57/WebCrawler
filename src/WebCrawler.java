@@ -16,6 +16,7 @@ import java.util.regex.Pattern;
 public class WebCrawler {
 
     public static void main(String args[]) throws InterruptedException, IOException {
+        //TODO multithreading the search
         GraphDatabaseService graphDb = new GraphDatabaseFactory().newEmbeddedDatabase("C:\\Users\\Robert\\Documents\\Neo4j\\try3.graphdb");
         registerShutdownHook(graphDb);
 
@@ -24,16 +25,22 @@ public class WebCrawler {
         System.setProperty("sun.net.client.defaultReadTimeout", "1000");
 
         // initial web page
+        //TODO get the link from the arguments of the jar
         String s = "https://www.facebook.com";
         //TODO serialize queue and use it to save the state of the search
-        // list of web pages to be examined
+        //TODO switch to using a list or something that we can get the size of
+        //TODO find a way to run some code when you force  quit the program (the queue serialize part)
+        //TODO when the program closes serialize the queue so we can continue the crawl from where we left off
+
         Queue<String> q = new Queue<String>();
         q.enqueue(s);
 
         // existence symbol table of examined web pages
         List<String> list = new LinkedList<String>();
+        //TODO query the database to see if we already have visited a link don't store them in a map locally (uses to much ram ex:8000 entries in map and unknown in queue = 3GB)
         Map<String, Integer> map = new HashMap<>();
         //list.add(s);
+        //TODO find a better regex for url matching
         String regexp = "(http|https):\\/\\/(\\w+\\.)*(\\w+)";
         Pattern pattern = Pattern.compile(regexp);
 //            Index<Node> links = index.forNodes("Links" );
@@ -45,6 +52,7 @@ public class WebCrawler {
             URL oracle = new URL(v);
             Transaction tx = graphDb.beginTx();
             try {
+                //TODO do not add the node if the link isn't correct (it threw an error)
                 BufferedReader in = new BufferedReader(
                         new InputStreamReader(oracle.openStream()));
                 if (in != null) {
@@ -60,19 +68,15 @@ public class WebCrawler {
                             } else {
                                 map.put(w, 1);
                                 q.enqueue(w);
-
+                                //TODO we need to link backwards as well (atm v->w) we need (w->v) as well
                                 // Database operations go here
 
                                 Node firstNode;
                                 Node secondNode;
                                 Relationship relationship;
-                                firstNode = null;
-//                                    firstNode.setProperty( "link", v);
-                                secondNode = null;
-//                                    secondNode.setProperty( "link", w);
 
-//                                    relationship = firstNode.createRelationshipTo( secondNode, RelTypes.KNOWS );
-//                                    relationship.setProperty( "message", "knows" );
+                                firstNode = null;
+                                secondNode = null;
 
                                 ExecutionEngine engine = new ExecutionEngine(graphDb);
 
@@ -92,11 +96,11 @@ public class WebCrawler {
                                     secondNode = node;
                                     secondNode.setProperty("count", (Integer) node.getProperty("count") + 1);
                                 }
-                                if(firstNode == null){
+                                if (firstNode == null) {
                                     firstNode = graphDb.createNode();
                                 }
 
-                                if(secondNode == null){
+                                if (secondNode == null) {
                                     secondNode = graphDb.createNode();
                                 }
 
@@ -120,7 +124,8 @@ public class WebCrawler {
                 in.close();
 //                    graphDb.shutdown();
             } catch (Exception e) {
-                System.out.println("Exception " + e.toString());
+                //TODO we get quite a few errors here log all of them or at least the most important ones
+//                System.out.println("Exception " + e.toString());
             } finally {
                 tx.close();
             }
