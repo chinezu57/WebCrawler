@@ -3,7 +3,6 @@ import org.neo4j.cypher.javacompat.ExecutionResult;
 import org.neo4j.graphdb.*;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.helpers.collection.IteratorUtil;
-import sun.misc.Queue;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -17,7 +16,7 @@ public class WebCrawler {
 
     public static void main(String args[]) throws InterruptedException, IOException {
         //TODO multithreading the search
-        GraphDatabaseService graphDb = new GraphDatabaseFactory().newEmbeddedDatabase("C:\\Users\\Robert\\Documents\\Neo4j\\try3.graphdb");
+        GraphDatabaseService graphDb = new GraphDatabaseFactory().newEmbeddedDatabase("crawler.graphdb");
         registerShutdownHook(graphDb);
 
         // timeout connection after 500 miliseconds
@@ -26,19 +25,17 @@ public class WebCrawler {
 
         // initial web page
         //TODO get the link from the arguments of the jar
-        String s = "https://www.facebook.com";
+        String s = "https://www.google.ro/";
         //TODO serialize queue and use it to save the state of the search
-        //TODO switch to using a list or something that we can get the size of
         //TODO find a way to run some code when you force  quit the program (the queue serialize part)
         //TODO when the program closes serialize the queue so we can continue the crawl from where we left off
 
-        Queue<String> q = new Queue<String>();
-        q.enqueue(s);
+        Queue<String> q = new LinkedList<String>();
+        q.add(s);
 
         // existence symbol table of examined web pages
         List<String> list = new LinkedList<String>();
         //TODO query the database to see if we already have visited a link don't store them in a map locally (uses to much ram ex:8000 entries in map and unknown in queue = 3GB)
-        Map<String, Integer> map = new HashMap<>();
         //list.add(s);
         //TODO find a better regex for url matching
         String regexp = "(http|https):\\/\\/(\\w+\\.)*(\\w+)";
@@ -46,8 +43,8 @@ public class WebCrawler {
 //            Index<Node> links = index.forNodes("Links" );
         // breadth first search crawl of web
         while (!q.isEmpty()) {
-            String v = q.dequeue();
-            System.out.println(v + " Map length: " + map.size());
+            String v = q.remove();
+            System.out.println(v + " Queue size: " + q.size());
 
             URL oracle = new URL(v);
             Transaction tx = graphDb.beginTx();
@@ -61,13 +58,15 @@ public class WebCrawler {
                         Matcher matcher = pattern.matcher(inputLine);
                         while (matcher.find()) {
                             String w = matcher.group();
-                            if (map.containsKey(w)) {
-                                map.put(w, map.get(w) + 1);
+                            if (list.contains(w)) {
+//                                map.put(w, map.get(w) + 1);
+//                                list.add(w);
 //                                System.out.println(w);
 //                                list.add(w);
                             } else {
-                                map.put(w, 1);
-                                q.enqueue(w);
+//                                map.put(w, 1);
+                                list.add(w);
+                                q.add(w);
                                 //TODO we need to link backwards as well (atm v->w) we need (w->v) as well
                                 // Database operations go here
 
