@@ -1,0 +1,31 @@
+def neo4jVersion = "2.1.6"
+
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'application'
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+jar {
+    baseName = 'crawler'
+    version =  '0.1.0'
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir 'src/java'
+        }
+    }
+}
+
+dependencies {
+    compile "org.neo4j:neo4j:${neo4jVersion}"
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.2.1'
+}

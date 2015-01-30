@@ -1,3 +1,4 @@
+package org.pasteur40.crawler;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;

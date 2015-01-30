@@ -1,3 +1,5 @@
+package org.pasteur40.crawler;
+
 import org.neo4j.graphdb.RelationshipType;
 
 /**

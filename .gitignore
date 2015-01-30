@@ -64,5 +64,8 @@ crashlytics-build.properties
 hs_err_pid*
 
 
-#Crawler database ignore#
+#org.pasteur40.crawler.Crawler database ignore#
 crawler.graphdb/
+.gradle
+gradle
+gradlew*
